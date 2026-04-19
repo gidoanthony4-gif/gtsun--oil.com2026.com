@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>GT SUNOIL SYSTEM</title>
+
+<style>
+
+/* BACKGROUND LOGIN */
+body{
+margin:0;
+font-family:Arial;
+background:#f4f7fb;
+}
+
+/* LOGIN */
+.login-bg{
+height:100vh;
+display:flex;
+justify-content:center;
+align-items:center;
+background:linear-gradient(135deg,#0b1f3a,#1e3c72);
+}
+
+.login-card{
+background:white;
+padding:25px;
+border-radius:12px;
+width:250px;
+text-align:center;
+}
+
+.login-card input{
+width:100%;
+padding:10px;
+margin:5px 0;
+border-radius:8px;
+border:1px solid #ddd;
+}
+
+.green{background:green;color:white;}
+.blue{background:#1a73e8;color:white;}
+
+/* TOPBAR */
+.topbar{
+background:#0b1f3a;
+color:white;
+padding:10px;
+display:flex;
+justify-content:space-between;
+}
+
+/* MENU */
+.menu{cursor:pointer;position:relative;}
+.dropdown{
+display:none;
+position:absolute;
+right:0;
+background:white;
+color:black;
+border-radius:8px;
+box-shadow:0 5px 10px rgba(0,0,0,0.2);
+}
+.dropdown div{
+padding:10px;
+cursor:pointer;
+}
+.dropdown div:hover{background:#eee;}
+
+/* CARDS */
+.card{
+background:white;
+margin:10px;
+padding:10px;
+border-radius:12px;
+box-shadow:0 3px 10px rgba(0,0,0,0.1);
+}
+
+/* PRODUCT */
+.product{
+display:flex;
+gap:10px;
+}
+
+.product img{
+width:80px;
+height:80px;
+object-fit:cover;
+}
+
+.price{
+color:#1a73e8;
+font-weight:bold;
+margin-top:auto;
+}
+
+/* BUTTON */
+button{
+padding:6px;
+border:none;
+border-radius:6px;
+background:#0b1f3a;
+color:white;
+margin-top:5px;
+}
+
+/* FOOTER */
+.footer{
+font-size:9px;
+color:gray;
+margin:10px;
+}
+
+</style>
+</head>
+
+<body>
+
+<!-- LOGIN -->
+<div id="loginPage" class="login-bg">
+
+<div class="login-card">
+<h3>GT SUNOIL</h3>
+
+<input id="email" placeholder="Email">
+<input id="password" placeholder="Password" type="password">
+
+<button class="green" onclick="login()">Log In</button>
+<button class="blue" onclick="signup()">Sign Up</button>
+
+</div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="app" style="display:none;">
+
+<div class="topbar">
+<span>GT SUNOIL</span>
+
+<div class="menu" onclick="toggleMenu()">⋮
+<div class="dropdown" id="menu">
+<div onclick="showPage('products')">Products</div>
+<div onclick="showPage('orders')">Orders</div>
+<div onclick="showPage('reports')">Reports</div>
+<div onclick="logout()">Logout</div>
+</div>
+</div>
+</div>
+
+<!-- PRODUCTS -->
+<div id="productsPage">
+
+<div class="card">
+<input id="p_name" placeholder="Product Name">
+<input id="p_price" placeholder="Price">
+<input type="file" id="p_img">
+<button onclick="addProduct()">Add Product</button>
+</div>
+
+<div id="productList"></div>
+
+</div>
+
+<!-- ORDERS -->
+<div id="ordersPage" style="display:none;">
+<div id="orderList"></div>
+</div>
+
+<!-- REPORTS -->
+<div id="reportsPage" style="display:none;">
+<div class="card">
+Total Orders: <span id="totalOrders"></span><br>
+Total Sales: <span id="totalSales"></span>
+</div>
+</div>
+
+<div class="footer">gidocreator</div>
+
+</div>
+
+<script>
+
+/* LOGIN */
+function login(){
+localStorage.setItem("user", email.value);
+startApp();
+}
+
+function signup(){
+alert("Account created");
+}
+
+/* START */
+function startApp(){
+document.getElementById("loginPage").style.display="none";
+document.getElementById("app").style.display="block";
+loadProducts();
+loadOrders();
+loadReports();
+}
+
+/* MENU */
+function toggleMenu(){
+let m=document.getElementById("menu");
+m.style.display=(m.style.display=="block")?"none":"block";
+}
+
+/* NAV */
+function showPage(p){
+productsPage.style.display="none";
+ordersPage.style.display="none";
+reportsPage.style.display="none";
+
+if(p=="products") productsPage.style.display="block";
+if(p=="orders") ordersPage.style.display="block";
+if(p=="reports") reportsPage.style.display="block";
+}
+
+/* PRODUCTS */
+function addProduct(){
+
+let file = p_img.files[0];
+
+let reader = new FileReader();
+
+reader.onload = function(e){
+
+let products = JSON.parse(localStorage.getItem("products"))||[];
+
+products.push({
+name:p_name.value,
+price:p_price.value,
+image:e.target.result
+});
+
+localStorage.setItem("products",JSON.stringify(products));
+loadProducts();
+
+}
+
+if(file) reader.readAsDataURL(file);
+
+}
+
+function loadProducts(){
+
+let box = document.getElementById("productList");
+box.innerHTML="";
+
+let products = JSON.parse(localStorage.getItem("products"))||[];
+
+products.forEach(p=>{
+
+box.innerHTML+=`
+<div class="card product">
+<img src="${p.image}">
+<div>
+<b>${p.name}</b><br>
+<div class="price">${p.price} TZS</div>
+<button onclick="order('${p.name}','${p.price}')">Order</button>
+</div>
+</div>
+`;
+
+});
+}
+
+/* ORDERS */
+function order(name,price){
+
+let orders = JSON.parse(localStorage.getItem("orders"))||[];
+
+orders.push({
+name:name,
+price:price
+});
+
+localStorage.setItem("orders",JSON.stringify(orders));
+
+loadOrders();
+
+window.open("https://wa.me/255612481853?text="+name+" "+price);
+
+}
+
+function loadOrders(){
+
+let box=document.getElementById("orderList");
+box.innerHTML="";
+
+let orders = JSON.parse(localStorage.getItem("orders"))||[];
+
+orders.forEach(o=>{
+box.innerHTML+=`<div class="card">${o.name} - ${o.price}</div>`;
+});
+}
+
+/* REPORTS */
+function loadReports(){
+
+let orders = JSON.parse(localStorage.getItem("orders"))||[];
+
+totalOrders.innerText = orders.length;
+
+let total=0;
+orders.forEach(o=> total+=parseInt(o.price||0));
+
+totalSales.innerText = total+" TZS";
+
+}
+
+/* LOGOUT */
+function logout(){
+location.reload();
+}
+
+</script>
+
+</body>
+</html>
